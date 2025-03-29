@@ -105,7 +105,7 @@ def hypothesis_testing(df):
     stat, p_value = f_oneway(*groups)
     print(f"ANOVA: статистика = {stat:.2f}, p-значение = {p_value:.2e}")
 
-    print("\nГипотеза 2: Различается ли вес автомобилей (weight) в зависимости от страны происхождения (origin)?")
+    print("\nГипотеза 2: Различается ли количество лошадиных сил автомобилей (horsepower) в зависимости от страны происхождения (origin)?")
     usa_weight = df[df['origin'] == 0]['weight'].dropna()
     europe_weight = df[df['origin'] == 1]['weight'].dropna()
     stat, p_value = ttest_ind(usa_weight, europe_weight, equal_var=False)
