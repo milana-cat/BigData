@@ -2,10 +2,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.impute import SimpleImputer
+from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cluster import KMeans, AgglomerativeClustering
 from sklearn.metrics import silhouette_score
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, KernelPCA
 from scipy.cluster.hierarchy import dendrogram, linkage
 import pickle
 
@@ -14,17 +16,31 @@ def load_and_prepare_data(filepath):
     print("Информация о данных")
     print(data.info())
     print("\nПропущенные значения\n", data.isnull().sum())
-
+    df = preprocess_data(data)
     # Удаление пропущенных значений
-    data.dropna(inplace=True)
+    df.dropna(inplace=True)
 
 
 
-    return data
+    return df
+
+def preprocess_data(df):
+    """Обрабатывает пропущенные значения и удаляет категориальные признаки."""
+    df = df.select_dtypes(include=[np.number])  # Удаляем нечисловые признаки
+    imputer = SimpleImputer(strategy='mean')
+    df_imputed = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
+    #df_imputed= df_imputed.drop(columns=['car_ID'])
+    for colum in df_imputed.columns:
+        Q1 = df_imputed[colum].quantile(0.25)
+        Q3 = df_imputed[colum].quantile(0.75)
+        IQR = Q3 - Q1
+        # Удаление выбросов
+        filtered_data = df_imputed[~((df_imputed[colum] < (Q1 - 1.5 * IQR)) | (df_imputed[colum] > (Q3 + 1.5 * IQR)))]
+    return filtered_data
 
 def scale_features(data, drop_column='Id'):
     scaler = StandardScaler()
-    scaled = scaler.fit_transform(data.drop(columns=[drop_column]))
+    scaled = scaler.fit_transform(data)
     return scaled
 
 def elbow_method_manual(X, k_range=range(2, 11)):
@@ -147,7 +163,10 @@ def custom_kmeans(X, n_clusters, max_iters=100, random_state=42):
 
 def main():
     data = load_and_prepare_data('WineQT.csv')
-    X_scaled = scale_features(data)
+    kpca = KernelPCA(n_components=3, kernel ='cosine');
+    X_scaled = kpca.fit_transform(data)
+    #X_scaled = scale_features(X_scaled )
+
 
     elbow_method_manual(X_scaled)
     optimal_k = silhouette_analysis(X_scaled)

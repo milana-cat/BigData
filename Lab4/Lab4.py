@@ -269,9 +269,9 @@ def plot_predictions(model, X_test, y_test, model_name="Linear Regression"):
 
     
 if __name__ == "__main__":
-    file_path = "train.csv"  # Укажите путь к файлу, если он не в текущей директории
+    file_path = "train.csv"  
     df_reduced = load_data(file_path)
-    df = df_reduced.sample(frac=0.07  , random_state=42)
+    df = df_reduced.sample(frac=0.03 , random_state=42)
     df_columns = df.columns.tolist()
     print(df_columns)
     data_overview(df)
@@ -283,7 +283,7 @@ if __name__ == "__main__":
     df = encode_categorical(df)
     test_hypotheses(df)
     target_column = "store_sales(in millions)"  # Целевая переменная   поменять местами
-    feature_column = "unit_sales(in millions) "  # Несколько столбцов подавать на вход.
+    feature_column = ["unit_sales(in millions)", "florist"] # Несколько столбцов подавать на вход.
     X_train, X_test, y_train, y_test, feature_names = split_data(df, target_column)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
